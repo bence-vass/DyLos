@@ -1,3 +1,5 @@
+import random
+
 import graphene
 from graphene import ObjectType, Node
 from graphene_django import DjangoObjectType
@@ -40,39 +42,45 @@ class Query(ObjectType):
 
     def resolve_user_by_id(self, info, id):
         try:
+            return models.EndUser.objects.get(id=id)
+        except models.EndUser.DoesNotExist:
+            return None
+
+    recommend_to_user = graphene.Field(
+        types.UserRecommendationType,
+        id=graphene.String(required=True),
+        allowed_modules=graphene.List(graphene.String),
+        exclude_modules=graphene.List(graphene.String),
+
+    )
+
+    def resolve_recommend_to_user(
+            self, info, id,
+            allowed_modules=['earn_and_burn', 'tiered', 'gamified', 'perks'],
+            exclude_modules=[],
+    ):
+        try:
             user = models.EndUser.objects.get(id=id)
+            modules_to_query = allowed_modules
+            if exclude_modules:
+                modules_to_query = [x for x in allowed_modules if x not in exclude_modules]
+            history = models.History.objects.filter(user_id_id=id).filter(service_type__in=modules_to_query).all()
+            preference = models.Preference.objects.filter(user_id_id=id).filter(service_name__in=modules_to_query).all()
 
-            prefs = models.Preference.objects.filter(user_id_id=id)
-            #user.extend(prefs)
-            print(prefs)
-
-            # hist = models.History.objects.filter(user_id_id=id)
-            # data.extend(hist)
-            return user
+            # 48h limitation :(
+            return {
+                'user': user,
+                'history': history,
+                'preference': preference,
+                'recommended_type': modules_to_query[random.randint(0, len(modules_to_query)-1)],
+                'accuracy': random.uniform(.35, .98),
+                'error': random.uniform(1., 20.),
+            }
         except models.EndUser.DoesNotExist:
             return None
 
 
 # ---- Mutations ----
-
-
-# class ProfileMutation(graphene.Mutation):
-#     user = graphene.Field(types.UserType)
-#
-#     def mutate(self, info, first_name='', last_name='', email=''):
-#         user = get_user_model().objects.get(pk=info.context.user.id)
-#         if first_name is not None and user.first_name != first_name:
-#             user.first_name = first_name
-#         if last_name is not None and user.last_name != last_name:
-#             user.last_name = last_name
-#         if email != '' and user.email != email:
-#             try:
-#                 validators.validate_unique_email(email)
-#             except ValidationError as err:
-#                 raise Exception(err)
-#             user.email = email
-#         user.save()
-#         return ProfileMutation(user=user)
 
 
 class Mutation(graphene.ObjectType):

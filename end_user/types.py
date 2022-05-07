@@ -32,3 +32,15 @@ class UserType(graphene.Union):
         if isinstance(instance, HistoryType):
             return HistoryType
         return UserType.resolve_type(instance, info)
+
+
+class UserRecommendationType(graphene.ObjectType):
+    class Meta:
+        model = models.EndUser
+
+    user = graphene.Field(EndUserType)
+    history = graphene.List(HistoryType)
+    preference = graphene.List(PreferenceType)
+    recommended_type = graphene.String()
+    accuracy = graphene.Float()
+    error = graphene.Float()
