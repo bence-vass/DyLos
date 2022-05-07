@@ -1,15 +1,19 @@
 import graphene
-from graphene_django import DjangoObjectType
+import end_user.schema
 
 
+class Query(
+    end_user.schema.Query,
+    graphene.ObjectType
+):
+    pass
 
 
-class Query(graphene.ObjectType):
-    hello = graphene.String(default_value="Hi!")
-    # posts = graphene.List()
+class Mutation(
+    # end_user.schema.Mutation,
+    graphene.ObjectType
+):
+    pass
 
-
-    def resolve_posts(self, info):
-        pass
 
 schema = graphene.Schema(query=Query)
