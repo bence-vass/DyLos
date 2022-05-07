@@ -23,8 +23,34 @@ class UserNode(DjangoObjectType):
 class Query(ObjectType):
     all_end_users = graphene.List(types.EndUserType)
 
-    def resolve_all_end_user(self, info):
+    def resolve_all_end_users(self, info):
         return models.EndUser.objects.all()
+
+    all_history = graphene.List(types.HistoryType)
+
+    def resolve_all_history(self, info):
+        return models.History.objects.all()
+
+    all_preferences = graphene.List(types.PreferenceType)
+
+    def resolve_all_preferences(self, info):
+        return models.Preference.objects.all()
+
+    user_by_id = graphene.Field(types.EndUserType, id=graphene.String(required=True))
+
+    def resolve_user_by_id(self, info, id):
+        try:
+            user = models.EndUser.objects.get(id=id)
+
+            prefs = models.Preference.objects.filter(user_id_id=id)
+            #user.extend(prefs)
+            print(prefs)
+
+            # hist = models.History.objects.filter(user_id_id=id)
+            # data.extend(hist)
+            return user
+        except models.EndUser.DoesNotExist:
+            return None
 
 
 # ---- Mutations ----
