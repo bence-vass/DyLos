@@ -72,11 +72,45 @@ class Query(ObjectType):
                 'user': user,
                 'history': history,
                 'preference': preference,
-                'recommended_type': modules_to_query[random.randint(0, len(modules_to_query)-1)],
+                'recommended_type': modules_to_query[random.randint(0, len(modules_to_query) - 1)],
                 'accuracy': random.uniform(.35, .98),
                 'error': random.uniform(1., 20.),
             }
         except models.EndUser.DoesNotExist:
+            return None
+
+    recommend_service = graphene.Field(types.RecommendationType)
+
+    # Dynamic ctrl+c ctrl+v registry
+    def resolve_recommend_service(self, info):
+        try:
+            modules = ['earn_and_burn', 'tiered', 'gamified', 'perks']
+            modules_dict = {}
+            for m in modules:
+                filtered = models.Preference.objects.filter(service_name=m).all()
+                modules_dict[m] = {}
+                modules_dict[m]['count'] = len(filtered)
+                modules_dict[m]['avg_metric'] = sum([x.metric / len(filtered) for x in filtered])
+                modules_dict[m]['redeem_rate'] = sum([x.reach_out_count / len(filtered) for x in filtered])
+
+            return {
+                'earn_and_burn_count': modules_dict['earn_and_burn']['count'],
+                'earn_and_burn_avg_metric': modules_dict['earn_and_burn']['avg_metric'],
+                'earn_and_burn_redeem_rate': modules_dict['earn_and_burn']['redeem_rate'],
+
+                'tiered_count': modules_dict['tiered']['count'],
+                'tiered_avg_metric': modules_dict['tiered']['avg_metric'],
+                'tiered_redeem_rate': modules_dict['tiered']['redeem_rate'],
+
+                'gamified_count': modules_dict['gamified']['count'],
+                'gamified_avg_metric': modules_dict['gamified']['avg_metric'],
+                'gamified_redeem_rate': modules_dict['gamified']['redeem_rate'],
+
+                'perks_count': modules_dict['perks']['count'],
+                'perks_avg_metric': modules_dict['perks']['avg_metric'],
+                'perks__redeem_rate': modules_dict['perks']['redeem_rate'],
+            }
+        except:
             return None
 
 

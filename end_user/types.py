@@ -44,3 +44,24 @@ class UserRecommendationType(graphene.ObjectType):
     recommended_type = graphene.String()
     accuracy = graphene.Float()
     error = graphene.Float()
+
+
+class RecommendationType(graphene.ObjectType):
+    class Meta:
+        models = models.Preference
+
+    earn_and_burn_count = graphene.Float()
+    earn_and_burn_avg_metric = graphene.Float()
+    earn_and_burn_redeem_rate = graphene.Float()
+
+    tiered_count = graphene.Float()
+    tiered_avg_metric = graphene.Float()
+    tiered_redeem_rate = graphene.Float()
+
+    gamified_count = graphene.Float()
+    gamified_avg_metric = graphene.Float()
+    gamified_redeem_rate = graphene.Float()
+
+    perks_count = graphene.Float()
+    perks_avg_metric = graphene.Float()
+    perks__redeem_rate = graphene.Float()
